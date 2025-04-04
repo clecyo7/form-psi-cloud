@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-900 text-gray-100;
+    background-image: url('https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+input, select {
+  @apply bg-gray-800 border-gray-600 text-gray-100 rounded-md shadow-sm;
+}
+
+input:focus, select:focus {
+  @apply border-purple-500 ring-1 ring-purple-500 bg-gray-700;
+}
+
+input::placeholder {
+  @apply text-gray-400;
+}
+
+select option {
+  @apply bg-gray-800 text-gray-100;
+}
+
+.glass-morphism {
+  @apply backdrop-blur-md bg-gray-900/70 border border-gray-700;
+}
