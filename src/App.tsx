@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Phone, Mail, Briefcase, Heart, Home, AlertCircle, Brain, ChevronDown } from 'lucide-react';
+import { User, Phone, Mail, Briefcase, Heart, Home, AlertCircle, Brain, ChevronDown, FileText } from 'lucide-react';
 import InputMask from 'react-input-mask';
 import { type Patient, type Address } from './types';
 
@@ -9,6 +9,7 @@ function App() {
   const [emergencyPhoneCountryCode, setEmergencyPhoneCountryCode] = useState('55');
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [showEmergencyCountryDropdown, setShowEmergencyCountryDropdown] = useState(false);
+  const [cpfError, setCpfError] = useState('');
   
   // Country codes with flags
   const countries = [
@@ -40,9 +41,10 @@ function App() {
   const [patient, setPatient] = useState<Patient>({
     name: '',
     birthDate: '',
-    gender: 'male',
+    gender: 'masculino', // Changed from 'male' to 'masculino'
     email: '',
     phone: '',
+    cpf: '',
     profession: '',
     maritalStatus: '',
     address: {
@@ -89,6 +91,37 @@ function App() {
     }
   };
 
+  const validateCPF = (cpf: string): boolean => {
+    // Remove non-numeric characters
+    cpf = cpf.replace(/\D/g, '');
+    
+    // Check if it has 11 digits
+    if (cpf.length !== 11) return false;
+    
+    // Check if all digits are the same
+    if (/^(\d)\1+$/.test(cpf)) return false;
+    
+    // Validate first check digit
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+      sum += parseInt(cpf.charAt(i)) * (10 - i);
+    }
+    let remainder = (sum * 10) % 11;
+    if (remainder === 10 || remainder === 11) remainder = 0;
+    if (remainder !== parseInt(cpf.charAt(9))) return false;
+    
+    // Validate second check digit
+    sum = 0;
+    for (let i = 0; i < 10; i++) {
+      sum += parseInt(cpf.charAt(i)) * (11 - i);
+    }
+    remainder = (sum * 10) % 11;
+    if (remainder === 10 || remainder === 11) remainder = 0;
+    if (remainder !== parseInt(cpf.charAt(10))) return false;
+    
+    return true;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -96,6 +129,7 @@ function App() {
     const formattedPatient = {
       ...patient,
       phone: `${phoneCountryCode}${patient.phone.replace(/\D/g, '')}`,
+      cpf: patient.cpf.replace(/\D/g, ''),
       emergencyContact: {
         ...patient.emergencyContact,
         phone: `${emergencyPhoneCountryCode}${patient.emergencyContact.phone.replace(/\D/g, '')}`
@@ -193,6 +227,22 @@ function App() {
       }));
     }
 
+    // Validate CPF when it changes
+    if (name === 'cpf') {
+      const cpfValue = value.replace(/\D/g, '');
+      if (cpfValue.length === 11) {
+        if (!validateCPF(cpfValue)) {
+          setCpfError('CPF inválido');
+        } else {
+          setCpfError('');
+        }
+      } else if (cpfValue.length > 0) {
+        setCpfError('CPF deve ter 11 dígitos');
+      } else {
+        setCpfError('');
+      }
+    }
+
     if (name === 'address.cep') {
       const cep = value.replace(/\D/g, '');
       if (cep.length === 8) {
@@ -232,6 +282,29 @@ function App() {
                   />
                 </div>
 
+                {/* Add CPF field here */}
+                <div>
+                  <label htmlFor="cpf" className="block text-sm font-medium text-gray-300">CPF</label>
+                  <div className="mt-1 flex items-center">
+                    <FileText className="w-5 h-5 text-gray-500 mr-2" />
+                    <div className="w-full">
+                      <InputMask
+                        mask="999.999.999-99"
+                        type="text"
+                        id="cpf"
+                        name="cpf"
+                        value={patient.cpf}
+                        onChange={handleInputChange}
+                        required
+                        className={`block w-full ${cpfError ? 'border-red-500' : ''}`}
+                      />
+                      {cpfError && (
+                        <p className="mt-1 text-sm text-red-500">{cpfError}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <label htmlFor="birthDate" className="block text-sm font-medium text-gray-300">Data de Nascimento</label>
                   <input
@@ -252,11 +325,13 @@ function App() {
                     name="gender"
                     value={patient.gender}
                     onChange={handleInputChange}
+                    required
                     className="mt-1 block w-full"
                   >
-                    <option value="male">Masculino</option>
-                    <option value="female">Feminino</option>
-                    <option value="other">Outro</option>
+                    <option value="masculino">Masculino</option>
+                    <option value="feminino">Feminino</option>
+                    <option value="outro">Outro</option>
+                    <option value="prefiro_nao_informar">Prefiro não informar</option>
                   </select>
                 </div>
 
@@ -267,6 +342,7 @@ function App() {
                     name="maritalStatus"
                     value={patient.maritalStatus}
                     onChange={handleInputChange}
+                    required
                     className="mt-1 block w-full"
                   >
                     <option value="">Selecione...</option>
@@ -362,6 +438,7 @@ function App() {
                       name="profession"
                       value={patient.profession}
                       onChange={handleInputChange}
+                      required
                       className="block w-full"
                     />
                   </div>
@@ -386,6 +463,7 @@ function App() {
                     name="address.cep"
                     value={patient.address.cep}
                     onChange={handleInputChange}
+                    required
                     className="mt-1 block w-full"
                   />
                 </div>
@@ -398,6 +476,7 @@ function App() {
                     name="address.street"
                     value={patient.address.street}
                     onChange={handleInputChange}
+                    required
                     className="mt-1 block w-full"
                   />
                 </div>
@@ -410,6 +489,7 @@ function App() {
                     name="address.number"
                     value={patient.address.number}
                     onChange={handleInputChange}
+                    required
                     className="mt-1 block w-full"
                   />
                 </div>
@@ -434,6 +514,7 @@ function App() {
                     name="address.neighborhood"
                     value={patient.address.neighborhood}
                     onChange={handleInputChange}
+                    required
                     className="mt-1 block w-full"
                   />
                 </div>
@@ -446,6 +527,7 @@ function App() {
                     name="address.city"
                     value={patient.address.city}
                     onChange={handleInputChange}
+                    required
                     className="mt-1 block w-full"
                   />
                 </div>
@@ -458,6 +540,7 @@ function App() {
                     name="address.state"
                     value={patient.address.state}
                     onChange={handleInputChange}
+                    required
                     className="mt-1 block w-full"
                   />
                 </div>

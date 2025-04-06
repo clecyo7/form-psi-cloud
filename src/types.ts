@@ -10,23 +10,12 @@ export interface Address {
 export interface Patient {
   name: string;
   birthDate: string;
-  gender: 'male' | 'female' | 'other';
+  gender: string;
   email: string;
   phone: string;
+  cpf: string; // Add this line
   profession: string;
   maritalStatus: string;
-  address: {
-    cep: string;
-    street: string;
-    number: string;
-    complement: string;
-    neighborhood: string;
-    city: string;
-    state: string;
-  };
-  emergencyContact: {
-    name: string;
-    phone: string;
-    relationship: string;
-  };
+  address: Address;
+  emergencyContact: EmergencyContact;
 }
